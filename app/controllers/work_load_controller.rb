@@ -27,7 +27,7 @@ class WorkLoadController < ApplicationController
 
     @issuesForWorkload = ListUser::getOpenIssuesForUsers(@usersToDisplay)
     @monthsToRender = ListUser::getMonthsInTimespan(@timeSpanToDisplay)
-    @workloadData   = ListUser::getHoursPerUserIssueAndDay(@issuesForWorkload, @timeSpanToDisplay, @today)
+    @workloadData   = ListUser::getHoursPerUserIssueAndDay(@issuesForWorkload, @usersToDisplay, @timeSpanToDisplay, @today)
   end
 
 

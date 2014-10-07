@@ -9,7 +9,11 @@ class ListUser
     return 0.0 if issue.estimated_hours.nil?
     return 0.0 if issue.children.any?
 
-    return issue.estimated_hours*((100.0 - issue.done_ratio)/100.0)
+    if issue.assigned_to.is_a?(Group) && issue.assigned_to.users.length > 0 then
+      return ((issue.estimated_hours*((100.0 - issue.done_ratio)/100.0))/issue.assigned_to.users.length.to_f)
+    else
+      return issue.estimated_hours*((100.0 - issue.done_ratio)/100.0)
+    end
   end
 
   # Returns all issues that fulfill the following conditions:
@@ -167,6 +171,34 @@ class ListUser
 
     return result
   end
+  
+  def self.getAssignedUsers(assignee)
+    if assignee.is_a?(User) then
+      return [assignee]
+    elsif assignee.is_a?(Group)
+      return assignee.users
+    else
+      return []
+    end
+  end
+  
+  def self.initializeAssignee(assignee, timeSpan, workingDays)
+    newAssignee = {
+				:overdue_hours => 0.0,
+				:overdue_number => 0,
+				:total => Hash::new,
+				:invisible => Hash::new
+			}
+					
+		timeSpan.each do |day|
+			newAssignee[:total][day] = {
+				:hours => 0.0,
+				:holiday => !workingDays.include?(day)
+			}
+    end
+    
+    return newAssignee
+  end
 
   # Returns the hours per day in the given time span (including firstDay and
   # lastDay) for each open issue of each of the given users.
@@ -179,8 +211,9 @@ class ListUser
 	#								currently logged in user.
 	#´* :total.     Returns a summary of all issues for the user that this hash is
 	#								for.
-  def self.getHoursPerUserIssueAndDay(issues, timeSpan, today)
+  def self.getHoursPerUserIssueAndDay(issues, users, timeSpan, today)
     raise ArgumentError unless issues.kind_of?(Array)
+    raise ArgumentError unless users.kind_of?(Array)
     raise ArgumentError unless timeSpan.kind_of?(Range)
     raise ArgumentError unless today.kind_of?(Date)
 		
@@ -192,69 +225,62 @@ class ListUser
     result = {}
 
     issues.each do |issue|
+      
+      hoursForIssue = ListUser::getHoursForIssuesPerDay(issue, timeSpan, today)
+      
+      assignees = ListUser::getAssignedUsers(issue.assigned_to)
 			
-			assignee = issue.assigned_to
-			
-      if !result.has_key?(issue.assigned_to) then
-			result[assignee] = {
-					:overdue_hours => 0.0,
-					:overdue_number => 0,
-					:total => Hash::new,
-					:invisible => Hash::new
-				}
-					
-				timeSpan.each do |day|
-					result[assignee][:total][day] = {
-						:hours => 0.0,
-						:holiday => !workingDays.include?(day)
-					}
-				end
-			end
-			
-			hoursForIssue = getHoursForIssuesPerDay(issue, timeSpan, today)
+      assignees.each do |assignee|
+        if users.include?(assignee) then
+        
+          if !result.has_key?(assignee) then
+            result[assignee] = ListUser::initializeAssignee(assignee, timeSpan, workingDays)
+          end
+          
+          # Add the issue to the total workload, unless its overdue.
+          if issue.overdue? then
+            result[assignee][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
+            result[assignee][:overdue_number] += 1
+          else
+            result[assignee][:total] = addIssueInfoToSummary(result[assignee][:total], hoursForIssue, timeSpan)
+          end
+          
+          # If the issue is invisible, add it to the invisible issues summary.
+          # Otherwise, add it to the project (and its summary) to which it belongs
+          # to.
+          if !issue.visible? then
+            result[assignee][:invisible] = addIssueInfoToSummary(result[assignee][:invisible], hoursForIssue, timeSpan) unless issue.overdue?
+          else
+            project = issue.project
+            
+            if !result[assignee].has_key?(project) then
+              result[assignee][project] = {
+                :total => Hash::new,
+                :overdue_hours => 0.0,
+                :overdue_number => 0
+              }
+              
+              timeSpan.each do |day|
+                result[assignee][project][:total][day] = {
+                  :hours => 0.0,
+                  :holiday => !workingDays.include?(day)
+                }
+              end
+            end
 
-			# Add the issue to the total workload, unless its overdue.
-			if issue.overdue? then
-				result[assignee][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
-				result[assignee][:overdue_number] += 1
-			else
-				result[assignee][:total] = addIssueInfoToSummary(result[assignee][:total], hoursForIssue, timeSpan)
-			end
-		
-			# If the issue is invisible, add it to the invisible issues summary.
-			# Otherwise, add it to the project (and its summary) to which it belongs
-			# to.
-			if !issue.visible? then
-				result[assignee][:invisible] = addIssueInfoToSummary(result[assignee][:invisible], hoursForIssue, timeSpan) unless issue.overdue?
-			else
-				project = issue.project
-				
-				if !result[assignee].has_key?(project) then
-					result[assignee][project] = {
-						:total => Hash::new,
-						:overdue_hours => 0.0,
-						:overdue_number => 0
-					}
-					
-					timeSpan.each do |day|
-						result[assignee][project][:total][day] = {
-							:hours => 0.0,
-							:holiday => !workingDays.include?(day)
-						}
-					end
-				end
+            # Add the issue to the project workload summary, unless its overdue.
+            if issue.overdue? then
+              result[assignee][project][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
+              result[assignee][project][:overdue_number] += 1
+            else
+              result[assignee][project][:total] = addIssueInfoToSummary(result[assignee][project][:total], hoursForIssue, timeSpan)
+            end
 
-				# Add the issue to the project workload summary, unless its overdue.
-				if issue.overdue? then
-					result[assignee][project][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
-					result[assignee][project][:overdue_number] += 1
-				else
-					result[assignee][project][:total] = addIssueInfoToSummary(result[assignee][project][:total], hoursForIssue, timeSpan)
-				end
-
-				# Add it to the issues for that project in any case.
-				result[assignee][project][issue] = hoursForIssue
-			end
+            # Add it to the issues for that project in any case.
+            result[assignee][project][issue] = hoursForIssue
+          end
+        end
+      end
     end
 
     return result
