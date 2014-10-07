@@ -20,6 +20,12 @@ class ListUser
     raise ArgumentError unless users.kind_of?(Array)
 
     userIDs = users.map(&:id)
+    #groups = Group.joins(:users).where("users.id in (?)", userIDs)
+    #groupIDs = groups.map(&:id)
+    groupIDs = users.map(&:group_ids)
+    
+    principleIDs = userIDs | groupIDs
+    principleIDs.uniq!
 
     issue = Issue.arel_table
     project = Project.arel_table
@@ -29,7 +35,7 @@ class ListUser
     issues = Issue.joins(:project).
                    joins(:status).
                    joins(:assigned_to).
-                        where(issue[:assigned_to_id].in(userIDs)).      # Are assigned to one of the interesting users
+                        where(issue[:assigned_to_id].in(principleIDs)).      # Are assigned to one of the interesting users
                         where(project[:status].eq(1)).                  # Do not belong to an inactive project
                         where(issue_status[:is_closed].eq(false))       # Is open
 
