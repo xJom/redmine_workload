@@ -51,6 +51,8 @@ en:
 
   workload_settings_hours:                      "Workload thresholds"
   workload_settings_leastdailyworkload:         "Smallest workload that is considered to be ..."
+  workload_settings_hours_under_min:            "... under:"
   workload_settings_hours_low_min:              "... low:"
   workload_settings_hours_normal_min:           "... normal:"
-  workload_settings_hours_high_min:             "... overloaded:"
+  workload_settings_hours_high_min:             "... high:"
+  workload_settings_hours_over_min:             "... over:"

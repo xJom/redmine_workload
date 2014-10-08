@@ -319,14 +319,18 @@ class ListUser
     raise ArgumentError unless hours.respond_to?(:to_f)
     hours = hours.to_f
 
-    if hours < Setting['plugin_redmine_workload']['threshold_lowload_min'].to_f then
+    if hours < Setting['plugin_redmine_workload']['threshold_underload_min'].to_f then
       return "none"
+    elsif hours < Setting['plugin_redmine_workload']['threshold_lowload_min'].to_f then
+      return "under"
     elsif hours < Setting['plugin_redmine_workload']['threshold_normalload_min'].to_f then
       return "low"
     elsif hours < Setting['plugin_redmine_workload']['threshold_highload_min'].to_f then
       return "normal"
-    else
+    elsif hours < Setting['plugin_redmine_workload']['threshold_overload_min'].to_f then
       return "high"
+    else
+      return "over"
     end
   end
 

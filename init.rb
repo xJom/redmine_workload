@@ -25,9 +25,11 @@ Redmine::Plugin.register :redmine_workload do
               'general_workday_friday'    => 'checked',
               'general_workday_saturday'  => '',
               'general_workday_sunday'    => '',
-              'threshold_lowload_min'     => 0.1,
-              'threshold_normalload_min'  => 7,
-              'threshold_highload_min'    => 8.5
+              'threshold_underload_min'   => 0.1,
+              'threshold_lowload_min'     => 2.0,
+              'threshold_normalload_min'  => 4.0,
+              'threshold_highload_min'    => 6.0,
+              'threshold_overload_min'    => 8.0
            }
 
   permission :view_project_workload, :work_load => :show

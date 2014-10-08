@@ -262,17 +262,29 @@
     background-color: rgba(200, 200, 200, 0.5);
 }
 
+.controller-work_load .data .under span {
+    background: #B2B2B2; /* grayish */
+	color: black;
+}
+
 .controller-work_load .data .low span {
-    background: green;
+    background: #17A8E8; /* cyanish */
+	color: black;
 }
 
 .controller-work_load .data .normal span {
-    background: yellow;
+    background: #38E75D; /* greenish */
     color: black;
 }
 
 .controller-work_load .data .high span {
-    background: red;
+    background: #FBCC00; /* yellowish */
+	color: black;
+}
+
+.controller-work_load .data .over span {
+    background: #FA2250; /* redish */
+	color: white;
 }
 
 .controller-work_load .data .holiday {

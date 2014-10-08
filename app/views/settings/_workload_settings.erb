@@ -97,6 +97,13 @@
   <%= l(:workload_settings_leastdailyworkload) %>
 </p>
 <p>
+  <label><%= l(:workload_settings_hours_under_min) %></label>
+  <input type="text"
+         name="settings[threshold_underload_min]"
+         value="<%= settings['threshold_underload_min'] %>"
+  >
+</p>
+<p>
   <label><%= l(:workload_settings_hours_low_min) %></label>
   <input type="text"
          name="settings[threshold_lowload_min]"
@@ -115,5 +122,12 @@
   <input type="text"
          name="settings[threshold_highload_min]"
          value="<%= settings['threshold_highload_min'] %>"
+  >
+</p>
+<p>
+  <label><%= l(:workload_settings_hours_over_min) %></label>
+  <input type="text"
+         name="settings[threshold_overload_min]"
+         value="<%= settings['threshold_overload_min'] %>"
   >
 </p>
