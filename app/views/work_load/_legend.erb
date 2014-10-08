@@ -1,0 +1,16 @@
+<table class="legend">
+  <tbody>
+    <tr>
+	  <td class="under"><span><%= Setting['plugin_redmine_workload']['threshold_underload_min'] %> - <%= Setting['plugin_redmine_workload']['threshold_lowload_min'].to_f - 0.1 %></span></td>
+	  <td><%= l(:workload_show_legend_hours_under_min) %></td>
+	  <td class="low"><span><%= Setting['plugin_redmine_workload']['threshold_lowload_min'] %> - <%= Setting['plugin_redmine_workload']['threshold_normalload_min'].to_f - 0.1 %></span></td>
+	  <td><%= l(:workload_show_legend_hours_low_min) %></td>
+	  <td class="normal"><span><%= Setting['plugin_redmine_workload']['threshold_normalload_min'] %> - <%= Setting['plugin_redmine_workload']['threshold_highload_min'].to_f - 0.1 %></span></td>
+	  <td><%= l(:workload_show_legend_hours_normal_min) %></td>
+	  <td class="high"><span><%= Setting['plugin_redmine_workload']['threshold_highload_min'] %> - <%= Setting['plugin_redmine_workload']['threshold_overload_min'].to_f - 0.1 %></span></td>
+	  <td><%= l(:workload_show_legend_hours_high_min) %></td>
+	  <td class="over"><span><%= Setting['plugin_redmine_workload']['threshold_overload_min'] %> + </span></td>
+	  <td><%= l(:workload_show_legend_hours_over_min) %></td>
+	</tr>
+  </tbody>
+</table>

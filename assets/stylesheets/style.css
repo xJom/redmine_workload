@@ -25,6 +25,53 @@
 }
 
 /*******************************************************************************
+ * Styles for the legend.
+ ******************************************************************************/
+ .controller-work_load .legend .under span {
+	display: inline-block;
+    background: #B2B2B2; /* grayish */
+	color: black;
+	border: 1px solid black;
+	padding: 2px;
+	font-weight:bold;
+}
+
+.controller-work_load .legend .low span {
+    background: #17A8E8; /* cyanish */
+	color: black;
+	color: black;
+	border: 1px solid black;
+	padding: 2px;
+	font-weight:bold;
+}
+
+.controller-work_load .legend .normal span {
+    background: #38E75D; /* greenish */
+    color: black;
+	color: black;
+	border: 1px solid black;
+	padding: 2px;
+	font-weight:bold;
+}
+
+.controller-work_load .legend .high span {
+    background: #FBCC00; /* yellowish */
+	color: black;
+	color: black;
+	border: 1px solid black;
+	padding: 2px;
+	font-weight:bold;
+}
+
+.controller-work_load .legend .over span {
+    background: #FA2250; /* redish */
+	color: white;
+	border: 1px solid black;
+	padding: 2px;
+	font-weight:bold;
+}
+
+/*******************************************************************************
  * Styles for the header of the gantt diagram.
  ******************************************************************************/
 
