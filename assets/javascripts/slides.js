@@ -13,4 +13,8 @@ $(document).ready(function() {
 			$affectedObjects.find('.trigger').html('&#x25b6;');
 		}
 	});
+	
+	if (typeof($('#workload_users').select2) !== 'undefined') {
+		$('#workload_users').select2({ width: 'resolve' });
+	}
 });
