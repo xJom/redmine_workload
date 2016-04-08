@@ -22,7 +22,10 @@ Redmine::Plugin.register :redmine_workload do
   author_url 'http://netzkönig.de/'
 
   menu :top_menu, :WorkLoad, { :controller => 'work_load', :action => 'show' }, :caption => :workload_title,
+    :after => :crm_top_menu,
     :if =>  Proc.new { User.current.logged? }
+
+  menu :admin_menu, :workload, {:controller => 'settings', :action => 'plugin', :id => "redmine_workload"}, :caption => :workload_title
 
   settings :partial => 'settings/workload_settings',
            :default => {
