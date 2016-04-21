@@ -1,7 +1,7 @@
 # -*- encoding : utf-8 -*-
 require 'redmine'
-require_dependency 'dateTools'
-require_dependency 'list_user'
+
+require_dependency 'redmine_workload'
 
 Redmine::Plugin.register :redmine_workload do
   name 'Redmine workload plugin'

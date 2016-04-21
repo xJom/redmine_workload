@@ -1,7 +1,5 @@
 # -*- encoding : utf-8 -*-
-class ListUser
-
-  require 'dateTools'
+class RedmineWorkload::ListUser
 
   def self.getEstimatedTimeForIssue(issue)
     raise ArgumentError unless issue.kind_of?(Issue)
@@ -60,8 +58,8 @@ class ListUser
     raise ArgumentError unless timeSpan.kind_of?(Range)
     raise ArgumentError unless today.kind_of?(Date)
 
-    hoursRemaining = ListUser::getEstimatedTimeForIssue(issue)
-    workingDays = DateTools::getWorkingDaysInTimespan(timeSpan)
+    hoursRemaining = getEstimatedTimeForIssue(issue)
+    workingDays = RedmineWorkload::DateTools.getWorkingDaysInTimespan(timeSpan)
 
     result = Hash::new
 
@@ -83,7 +81,7 @@ class ListUser
         }
       end
 
-      firstWorkingDayAfterToday = DateTools::getWorkingDaysInTimespan(today..timeSpan.end).min
+      firstWorkingDayAfterToday = RedmineWorkload::DateTools.getWorkingDaysInTimespan(today..timeSpan.end).min
       result[firstWorkingDayAfterToday] = Hash::new if result[firstWorkingDayAfterToday].nil?
       result[firstWorkingDayAfterToday][:hours] = hoursRemaining
 
@@ -123,7 +121,7 @@ class ListUser
     # The issue has start and end date
     else
       # Number of remaining working days for the issue:
-      numberOfWorkdaysForIssue = DateTools::getRealDistanceInDays([today, issue.start_date].max..issue.due_date)
+      numberOfWorkdaysForIssue = RedmineWorkload::DateTools.getRealDistanceInDays([today, issue.start_date].max..issue.due_date)
       hoursPerWorkday = hoursRemaining/numberOfWorkdaysForIssue.to_f
 
       timeSpan.each do |day|
@@ -178,7 +176,7 @@ class ListUser
     raise ArgumentError unless timeSpan.kind_of?(Range)
     raise ArgumentError unless today.kind_of?(Date)
 		
-    workingDays = DateTools::getWorkingDaysInTimespan(timeSpan)
+    workingDays = RedmineWorkload::DateTools.getWorkingDaysInTimespan(timeSpan)
 		
 		firstWorkingDayFromTodayOn = workingDays.select {|x| x >= today}.min || today
 		
@@ -329,7 +327,7 @@ class ListUser
   end
 
   def self.addIssueInfoToSummary(summary, issueInfo, timeSpan)
-    workingDays = DateTools::getWorkingDaysInTimespan(timeSpan)
+    workingDays = RedmineWorkload::DateTools.getWorkingDaysInTimespan(timeSpan)
 		
 		summary = Hash::new if summary.nil?
 		

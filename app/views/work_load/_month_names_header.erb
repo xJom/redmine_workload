@@ -3,7 +3,7 @@
 %>
 
 <%
-  monthsInTimespan = ListUser::getMonthsInTimespan(@timeSpanToDisplay)
+  monthsInTimespan = RedmineWorkload::ListUser.getMonthsInTimespan(@timeSpanToDisplay)
 %>
 <% monthsInTimespan.each do |month| %>
   <th class="month-name" colspan="<%= (month[:last_day].day - month[:first_day].day) + 1 %>" scope="colgroup">

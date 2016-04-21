@@ -1,5 +1,5 @@
 # -*- encoding : utf-8 -*-
-class DateTools
+class RedmineWorkload::DateTools
 
   # Returns a list of all regular working weekdays.
   # 1 is monday, 7 is sunday (same as in Date::cwday)

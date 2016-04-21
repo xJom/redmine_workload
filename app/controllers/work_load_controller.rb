@@ -28,9 +28,9 @@ class WorkLoadController < ApplicationController
 
     initalizeUsers(workloadParameters)       
 
-    @issuesForWorkload = ListUser::getOpenIssuesForUsers(@usersToDisplay)
-    @monthsToRender = ListUser::getMonthsInTimespan(@timeSpanToDisplay)
-    @workloadData   = ListUser::getHoursPerUserIssueAndDay(@issuesForWorkload, @timeSpanToDisplay, @today)
+    @issuesForWorkload = RedmineWorkload::ListUser.getOpenIssuesForUsers(@usersToDisplay)
+    @monthsToRender = RedmineWorkload::ListUser.getMonthsInTimespan(@timeSpanToDisplay)
+    @workloadData   = RedmineWorkload::ListUser.getHoursPerUserIssueAndDay(@issuesForWorkload, @timeSpanToDisplay, @today)
   end
 
 
@@ -48,10 +48,10 @@ private
     
     @selectedGroups = @selectedGroups & @groupsToDisplay
     
-    @usersToDisplay=ListUser::getUsersOfGroups(@selectedGroups)
+    @usersToDisplay = RedmineWorkload::ListUser.getUsersOfGroups(@selectedGroups)
 
     # Get list of users that are allowed to be displayed by this user sort by lastname
-    @usersAllowedToDisplay = ListUser::getUsersAllowedToDisplay().sort_by { |u| u[:lastname] }
+    @usersAllowedToDisplay = RedmineWorkload::ListUser.getUsersAllowedToDisplay().sort_by { |u| u[:lastname] }
 
     userIds = workloadParameters[:users].kind_of?(Array) ? workloadParameters[:users] : []
     userIds.map! { |x| x.to_i }
