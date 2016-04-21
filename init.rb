@@ -3,6 +3,12 @@ require 'redmine'
 
 require_dependency 'redmine_workload'
 
+require_dependency 'redmine_workload'
+
+Rails.configuration.to_prepare do
+  RedmineWorkload::UserPreferencePatch.apply
+end
+
 Redmine::Plugin.register :redmine_workload do
   name 'Redmine workload plugin'
   author 'Jost Baron'

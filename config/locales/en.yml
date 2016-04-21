@@ -2,6 +2,8 @@
 en:
   permission_view_project_workload: "Show workload of own projects"
 
+  label_worktimes: Working Hours
+
   workload_title: "Workload"
   workload_site_title: "Workload"
   workload_show_label: "Workload"
