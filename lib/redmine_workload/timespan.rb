@@ -1,23 +1,39 @@
 module RedmineWorkload
   class Timespan
     def initialize(date_range)
+      raise ArgumentError unless Range === date_range && Date === date_range.first
       @date_range = date_range
     end
 
-    def working_day?(day)
-      working_days.include? day
+    def first
+      @date_range.first
     end
 
-    def holiday?(day)
-      !working_day?(day)
+    def working_day?(day, user = nil)
+      work_week.include?(day.cwday) and
+        user.nil? || user.working_hours(day) > 0
     end
 
-    def working_days
-      @working_days ||= @date_range.select{|day| work_week.include? day.cwday}
+    def holiday?(day, user = nil)
+      !working_day?(day, user)
     end
 
-    def real_distance_in_days
-      working_days.size
+    def include?(date)
+      @date_range.include? date
+    end
+
+    def working_days(user = nil)
+      (@working_days ||= {})[user] ||=
+        @date_range.select{|day| working_day? day, user}
+    end
+
+    # sum of hours the given user is scheduled to work in range
+    def working_hours_for(user)
+      working_days(user).inject(0){|sum, date| sum += user.working_hours(date)}
+    end
+
+    def real_distance_in_days(user = nil)
+      working_days(user).size
     end
 
     def each(&block)
@@ -28,8 +44,8 @@ module RedmineWorkload
       @date_range.any?
     end
 
-    def first_work_day_from(date)
-      working_days.detect{|d| d >= date}
+    def first_work_day_from(date, user = nil)
+      working_days(user).detect{|d| d >= date}
     end
 
     # Returns an array with one entry for each month in the given time span.
@@ -60,7 +76,8 @@ module RedmineWorkload
     private
 
     def work_week
-      @work_week ||= DateTools.working_days
+      @work_week ||= RedmineWorkload.working_days
     end
   end
 end
+

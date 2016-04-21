@@ -21,5 +21,9 @@ module RedmineWorkload
       end
     end
 
+    def workload_hours(day)
+      send(:"workload_hours_#{day}").to_f
+    end
+
   end
 end

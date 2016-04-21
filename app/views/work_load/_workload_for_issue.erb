@@ -3,13 +3,13 @@
 # Parameters:
 #  * user: The user to render the data for.
 #  * issue: The issue to render the data for.
-#  * data: The data to render. A hash with days as keys.
+#  * workload: The data to render. A Workload instance
 #  * index: Index of the issue for this user.
 %>
 
 <%
   klass  = (index % 2 == 0) ? 'even' : 'odd'
-  klass += ' overdue' if !issue.due_date.nil? && (issue.due_date < @today)
+  klass += ' overdue' if issue.workload_overdue?(@today)
 %>
 
 <tr class="issue-workload <%= klass %>">
@@ -18,26 +18,9 @@
       <span class="tip"><%= render_issue_tooltip(issue) %></span>
     </div>
   </th>
-  <%
-    data.keys.sort.each do |day|
-      dataForDay = data[day]
-
-      klass  = 'hours'
-      klass += ' active'        if  dataForDay[:active]
-      klass += ' not-active'    if !dataForDay[:active]
-      klass += ' holiday'       if  dataForDay[:holiday]
-      klass += ' workingday'    if !dataForDay[:holiday]
-      klass += ' not-estimated' if  dataForDay[:noEstimate]
-      klass += ' estimated'     if !dataForDay[:noEstimate]
-      klass += ' today'         if  @today === day
-      klass += ' ' + RedmineWorkload::ListUser.getLoadClassForHours(dataForDay[:hours])
-
-      hoursString = (dataForDay[:hours].abs < 0.01) ? '' : sprintf("%.1f", dataForDay[:hours])
-  %>
-    <td class="<%= klass %>">
-      <span>
-        <%= hoursString %>
-      </span>
+  <% workload.each do |workload_day| %>
+    <td class="<%= workload_day_class workload_day %>">
+      <span><%= format_workload_hours workload_day.hours %></span>
     </td>
   <% end %>
 </tr>
