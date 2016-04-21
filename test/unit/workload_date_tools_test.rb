@@ -1,12 +1,9 @@
 # -*- encoding : utf-8 -*-
 require File.expand_path('../../test_helper', __FILE__)
 
-class WorkloadDateToolsTest < ActiveSupport::TestCase
+class WorkloadDateToolsTest < WorkloadTestCase
 
   test "getWorkingDaysInTimespan works if start and end day are equal and no holiday." do
-
-    # Set friday to be a working day.
-    Setting['plugin_redmine_workload']['general_workday_friday'] = 'checked';
 
     date = Date.new(2005, 12, 30);      # A friday
     assert_equal Set::new([date]), RedmineWorkload::DateTools.getWorkingDaysInTimespan(date..date, true);
@@ -15,10 +12,11 @@ class WorkloadDateToolsTest < ActiveSupport::TestCase
   test "getWorkingDaysInTimespan works if start and end day are equal and a holiday." do
 
     # Set friday to be a holiday.
-    Setting['plugin_redmine_workload']['general_workday_friday'] = '';
+    with_plugin_settings 'general_workday_friday' => '' do
 
     date = Date.new(2005, 12, 30);      # A friday
     assert_equal Set::new, RedmineWorkload::DateTools.getWorkingDaysInTimespan(date..date, true);
+    end
   end
 
   test "getWorkingDaysInTimespan works if start day before end day." do
@@ -31,24 +29,18 @@ class WorkloadDateToolsTest < ActiveSupport::TestCase
   test "getWorkingDaysInTimespan works if both days follow each other and are holidays." do
 
     # Set wednesday and thursday to be a holiday.
-    Setting['plugin_redmine_workload']['general_workday_wednesday'] = '';
-    Setting['plugin_redmine_workload']['general_workday_thursday'] = '';
+    with_plugin_settings 'general_workday_wednesday' => '',
+                         'general_workday_thursday' => '' do
 
     startDate = Date.new(2005, 12, 28); # A wednesday
     endDate = Date.new(2005, 12, 29);     # A thursday
     assert_equal Set::new, RedmineWorkload::DateTools.getWorkingDaysInTimespan(startDate..endDate, true);
+    end
   end
 
   test "getWorkingDaysInTimespan works if only weekends and mondays are holidays and startday is thursday, endday is tuesday." do
 
-    # Set saturday, sunday and monday to be a holiday, all others to be a working day.
-    Setting['plugin_redmine_workload']['general_workday_monday'] = '';
-    Setting['plugin_redmine_workload']['general_workday_tuesday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_wednesday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_thursday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_friday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_saturday'] = '';
-    Setting['plugin_redmine_workload']['general_workday_sunday'] = '';
+    with_plugin_settings 'general_workday_monday' => '' do
 
     startDate = Date.new(2005, 12, 29); # A thursday
     endDate = Date.new(2006, 1, 3);     # A tuesday
@@ -60,20 +52,13 @@ class WorkloadDateToolsTest < ActiveSupport::TestCase
     ]
 
     assert_equal Set::new(expectedResult), RedmineWorkload::DateTools.getWorkingDaysInTimespan(startDate..endDate, true);
+    end
   end
 
   test "getWorkingDays returns the working days." do
-
-    # Set saturday, sunday and monday to be a holiday, all others to be a working day.
-    Setting['plugin_redmine_workload']['general_workday_monday'] = '';
-    Setting['plugin_redmine_workload']['general_workday_tuesday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_wednesday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_thursday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_friday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_saturday'] = '';
-    Setting['plugin_redmine_workload']['general_workday_sunday'] = '';
-
-    assert_equal Set::new([2, 3, 4, 5]), RedmineWorkload::DateTools.getWorkingDays()
+    with_plugin_settings 'general_workday_monday' => '' do
+      assert_equal Set::new([2, 3, 4, 5]), RedmineWorkload::DateTools.getWorkingDays()
+    end
   end
 
 end

@@ -1,10 +1,10 @@
 # -*- encoding : utf-8 -*-
 require File.expand_path('../../test_helper', __FILE__)
 
-class WorkloadListUserTest < ActiveSupport::TestCase
+class WorkloadListUserTest < WorkloadTestCase
 
   fixtures :trackers, :projects, :projects_trackers, :members, :member_roles,
-           :users, :issue_statuses, :enumerations, :roles
+           :users, :issue_statuses, :enumerations, :roles, :enabled_modules
 
 
   test "getOpenIssuesForUsers returns empty list if no users given" do
@@ -49,47 +49,35 @@ class WorkloadListUserTest < ActiveSupport::TestCase
     firstDay = Date::new(2012, 3, 29)
     lastDay = Date::new(2012, 3, 28)
 
-    assert_equal [], RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map(&:month)
+    assert_equal [], RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map{|hsh| hsh[:first_day].month}
   end
 
   test "getMonthsBetween returns [3] if both days in march 2012 and equal" do
     firstDay = Date::new(2012, 3, 27)
     lastDay = Date::new(2012, 3, 27)
 
-    assert_equal [3], RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map(&:month)
+    assert_equal [3], RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map{|hsh| hsh[:first_day].month}
   end
 
   test "getMonthsBetween returns [3] if both days in march 2012 and different" do
     firstDay = Date::new(2012, 3, 27)
     lastDay = Date::new(2012, 3, 28)
 
-    assert_equal [3], RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map(&:month)
+    assert_equal [3], RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map{|hsh| hsh[:first_day].month}
   end
 
   test "getMonthsBetween returns [3, 4, 5] if first day in march and last day in may" do
     firstDay = Date::new(2012, 3, 31)
     lastDay = Date::new(2012, 5, 1)
 
-    assert_equal [3, 4, 5], RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map(&:month)
+    assert_equal [3, 4, 5], RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map{|hsh| hsh[:first_day].month}
   end
 
   test "getMonthsBetween returns correct result timespan overlaps year boundary" do
     firstDay = Date::new(2011, 3, 3)
     lastDay = Date::new(2012, 5, 1)
 
-    assert_equal (3..12).to_a.concat((1..5).to_a), RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map(&:month)
-  end
-
-  # Set Saturday, Sunday and Wednesday to be a holiday, all others to be a
-  # working day.
-  def defineSaturdaySundayAndWendnesdayAsHoliday
-    Setting['plugin_redmine_workload']['general_workday_monday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_tuesday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_wednesday'] = '';
-    Setting['plugin_redmine_workload']['general_workday_thursday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_friday'] = 'checked';
-    Setting['plugin_redmine_workload']['general_workday_saturday'] = '';
-    Setting['plugin_redmine_workload']['general_workday_sunday'] = '';
+    assert_equal (3..12).to_a.concat((1..5).to_a), RedmineWorkload::ListUser.getMonthsInTimespan(firstDay..lastDay).map{|hsh| hsh[:first_day].month}
   end
 
   def assertIssueTimesHashEquals(expected, actual)
@@ -138,7 +126,7 @@ class WorkloadListUserTest < ActiveSupport::TestCase
 
   test "getHoursForIssuesPerDay works if issue is completely in given time span and nothing done" do
 
-    defineSaturdaySundayAndWendnesdayAsHoliday
+    with_wednesday_as_holiday do
 
     issue = Issue.generate!(
                              :start_date => Date::new(2013, 5, 31), # A Friday
@@ -178,11 +166,13 @@ class WorkloadListUserTest < ActiveSupport::TestCase
     }
 
     assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+
+    end
   end
 
   test "getHoursForIssuesPerDay works if issue lasts after time span and done_ratio > 0" do
 
-    defineSaturdaySundayAndWendnesdayAsHoliday
+    with_wednesday_as_holiday do
 
     # 30 hours still need to be done, 3 working days until issue is finished.
     issue = Issue.generate!(
@@ -227,11 +217,12 @@ class WorkloadListUserTest < ActiveSupport::TestCase
     }
 
     assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+    end
   end
 
   test "getHoursForIssuesPerDay works if issue starts before time span" do
 
-    defineSaturdaySundayAndWendnesdayAsHoliday
+    with_wednesday_as_holiday do
 
     # 36 hours still need to be done, 2 working days until issue is due.
     # One day has already passed with 10% done.
@@ -277,11 +268,12 @@ class WorkloadListUserTest < ActiveSupport::TestCase
     }
 
     assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+    end
   end
 
   test "getHoursForIssuesPerDay works if issue completely before time span" do
 
-    defineSaturdaySundayAndWendnesdayAsHoliday
+    with_wednesday_as_holiday do
 
     # 10 hours still need to be done, but issue is overdue. Remaining hours need
     # to be put on first working day of time span.
@@ -320,11 +312,12 @@ class WorkloadListUserTest < ActiveSupport::TestCase
     }
 
     assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+    end
   end
 
   test "getHoursForIssuesPerDay works if issue has no due date" do
 
-    defineSaturdaySundayAndWendnesdayAsHoliday
+    with_wednesday_as_holiday do
 
     # 10 hours still need to be done.
     issue = Issue.generate!(
@@ -362,11 +355,12 @@ class WorkloadListUserTest < ActiveSupport::TestCase
     }
 
     assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+    end
   end
 
   test "getHoursForIssuesPerDay works if issue has no start date" do
 
-    defineSaturdaySundayAndWendnesdayAsHoliday
+    with_wednesday_as_holiday do
 
     # 10 hours still need to be done.
     issue = Issue.generate!(
@@ -404,11 +398,12 @@ class WorkloadListUserTest < ActiveSupport::TestCase
     }
 
     assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+    end
   end
 
   test "getHoursForIssuesPerDay works if in time span and issue overdue" do
 
-    defineSaturdaySundayAndWendnesdayAsHoliday
+    with_wednesday_as_holiday do
 
     # 10 hours still need to be done, but issue is overdue. Remaining hours need
     # to be put on first working day of time span.
@@ -469,11 +464,12 @@ class WorkloadListUserTest < ActiveSupport::TestCase
     }
 
     assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, today)
+    end
   end
 
   test "getHoursForIssuesPerDay works if issue is completely in given time span, but has started" do
 
-    defineSaturdaySundayAndWendnesdayAsHoliday
+    with_wednesday_as_holiday do
 
     issue = Issue.generate!(
                              :start_date => Date::new(2013, 5, 31), # A Friday
@@ -532,13 +528,17 @@ class WorkloadListUserTest < ActiveSupport::TestCase
     }
 
     assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, today)
+    end
   end
 
   test "getHoursPerUserIssueAndDay returns correct structure" do
-    user = User.generate!
+    user = User.find(2)
+    project = Project.find(1)
+    User.current = user
 
     issue1 = Issue.generate!(
                              :assigned_to => user,
+                             :project => project,
                              :start_date => Date::new(2013, 5, 31), # A Friday
                              :due_date => Date::new(2013, 6, 4),    # A Tuesday
                              :estimated_hours => 10.0,
@@ -548,6 +548,7 @@ class WorkloadListUserTest < ActiveSupport::TestCase
 
     issue2 = Issue.generate!(
                              :assigned_to => user,
+                             :project => project,
                              :start_date => Date::new(2013, 6, 3), # A Friday
                              :due_date => Date::new(2013, 6, 6),    # A Tuesday
                              :estimated_hours => 30.0,
@@ -555,18 +556,20 @@ class WorkloadListUserTest < ActiveSupport::TestCase
                              :status => IssueStatus.find(1) # New, not closed
                             )
 
-    firstDay = Date::new(2013, 5, 25)
-    lastDay = Date::new(2013, 6, 4)
-    today = Date::new(2013, 5, 31)
+    firstDay = Date.new(2013, 5, 25)
+    lastDay = Date.new(2013, 6, 4)
+    today = Date.new(2013, 5, 31)
 
-    workloadData = RedmineWorkload::ListUser.getHoursPerUserIssueAndDay([user], firstDay..lastDay, today)
+    workloadData = RedmineWorkload::ListUser.getHoursPerUserIssueAndDay([issue1, issue2], firstDay..lastDay, today)
 
-    assert workloadData.has_key?(user)
+    assert user_data = workloadData[user]
 
     # Check that issue1 and 2 are the only keys for the user.
-    assert_equal 2, workloadData[user].keys.count
-    assert workloadData[user].has_key?(issue1)
-    assert workloadData[user].has_key?(issue2)
+    assert_equal 5, user_data.keys.count
+    assert user_data.key?(issue1.project)
+    assert project_data = user_data[issue1.project]
+    assert project_data.key?(issue1)
+    assert project_data.key?(issue2)
   end
 
   test "getEstimatedTimeForIssue works for issue without children." do
@@ -603,35 +606,28 @@ class WorkloadListUserTest < ActiveSupport::TestCase
   end
 
   test "getLoadClassForHours returns \"none\" for workloads below threshold for low workload" do
-    Setting['plugin_redmine_workload']['threshold_lowload_min'] = 0.1
-    Setting['plugin_redmine_workload']['threshold_normalload_min'] = 5.0
-    Setting['plugin_redmine_workload']['threshold_highload_min'] = 7.0
-
-    assert_equal "none", RedmineWorkload::ListUser.getLoadClassForHours(0.05)
+    with_load_settings 0.1, 5.0, 7.0 do
+      assert_equal "none", RedmineWorkload::ListUser.getLoadClassForHours(0.05)
+    end
   end
 
   test "getLoadClassForHours returns \"low\" for workloads between thresholds for low and normal workload" do
-    Setting['plugin_redmine_workload']['threshold_lowload_min'] = 0.1
-    Setting['plugin_redmine_workload']['threshold_normalload_min'] = 5.0
-    Setting['plugin_redmine_workload']['threshold_highload_min'] = 7.0
-
-    assert_equal "low", RedmineWorkload::ListUser.getLoadClassForHours(3.5)
+    with_load_settings 0.1, 5.0, 7.0 do
+      assert_equal "low", RedmineWorkload::ListUser.getLoadClassForHours(3.5)
+    end
   end
 
   test "getLoadClassForHours returns \"normal\" for workloads between thresholds for normal and high workload" do
-    Setting['plugin_redmine_workload']['threshold_lowload_min'] = 0.1
-    Setting['plugin_redmine_workload']['threshold_normalload_min'] = 2.0
-    Setting['plugin_redmine_workload']['threshold_highload_min'] = 7.0
+    with_load_settings 0.1, 2.0, 7.0 do
+      assert_equal "normal", RedmineWorkload::ListUser.getLoadClassForHours(3.5)
 
-    assert_equal "normal", RedmineWorkload::ListUser.getLoadClassForHours(3.5)
+    end
   end
 
   test "getLoadClassForHours returns \"high\" for workloads above threshold for high workload" do
-    Setting['plugin_redmine_workload']['threshold_lowload_min'] = 0.1
-    Setting['plugin_redmine_workload']['threshold_normalload_min'] = 2.0
-    Setting['plugin_redmine_workload']['threshold_highload_min'] = 7.0
-
-    assert_equal "high", RedmineWorkload::ListUser.getLoadClassForHours(10.5)
+    with_load_settings 0.1, 2.0, 10.0 do
+      assert_equal "high", RedmineWorkload::ListUser.getLoadClassForHours(10.5)
+    end
   end
 
   test "getUsersAllowedToDisplay returns an empty array if the current user is anonymus." do
@@ -673,4 +669,27 @@ class WorkloadListUserTest < ActiveSupport::TestCase
 
     assert_equal [User.current, projectMember1, projectMember2].map(&:id).sort, RedmineWorkload::ListUser.getUsersAllowedToDisplay.map(&:id).sort
   end
+
+
+
+  def with_load_settings(low, normal, high, &block)
+    with_plugin_settings(
+      {
+        'threshold_lowload_min' => low,
+        'threshold_normalload_min' => normal,
+        'threshold_highload_min' => high,
+      }, &block
+    )
+  end
+
+  # Set Saturday, Sunday and Wednesday to be a holiday, all others to be a
+  # working day.
+  def with_wednesday_as_holiday(&block)
+    with_plugin_settings(
+      {
+        'general_workday_wednesday' => '',
+      }, &block
+    )
+  end
+
 end

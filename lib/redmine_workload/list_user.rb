@@ -171,6 +171,9 @@ class RedmineWorkload::ListUser
 	#								currently logged in user.
 	#´* :total.     Returns a summary of all issues for the user that this hash is
 	#								for.
+  # * :overdue_hours
+  # * :overdue_number
+  #
   def self.getHoursPerUserIssueAndDay(issues, timeSpan, today)
     raise ArgumentError unless issues.kind_of?(Array)
     raise ArgumentError unless timeSpan.kind_of?(Range)
