@@ -165,12 +165,12 @@ class RedmineWorkload::ListUser
   # The result is returned as nested hash:
   # The topmost hash takes a user as key and returns a hash that takes an issue
   # as key. This second hash takes a project as key and returns another hash.
-	# This third level hash returns a hash that was returned by
-	# getHoursForIssuesPerDay. Additionally, it has two special keys:
-	# * :invisible. Returns a summary of all issues that are not visible for the
-	#								currently logged in user.
-	#´* :total.     Returns a summary of all issues for the user that this hash is
-	#								for.
+  # This third level hash returns a hash that was returned by
+  # getHoursForIssuesPerDay. Additionally, it has two special keys:
+  # * :invisible. Returns a summary of all issues that are not visible for the
+  #               currently logged in user.
+  #´* :total.     Returns a summary of all issues for the user that this hash is
+  #               for.
   # * :overdue_hours
   # * :overdue_number
   #
@@ -178,77 +178,77 @@ class RedmineWorkload::ListUser
     raise ArgumentError unless issues.kind_of?(Array)
     raise ArgumentError unless timeSpan.kind_of?(Range)
     raise ArgumentError unless today.kind_of?(Date)
-		
+
     workingDays = RedmineWorkload::DateTools.getWorkingDaysInTimespan(timeSpan)
-		
-		firstWorkingDayFromTodayOn = workingDays.select {|x| x >= today}.min || today
-		
+
+    firstWorkingDayFromTodayOn = workingDays.select {|x| x >= today}.min || today
+
     result = {}
 
     issues.each do |issue|
-			
-			assignee = issue.assigned_to
-			
+
+      assignee = issue.assigned_to
+
       if !result.has_key?(issue.assigned_to) then
-			result[assignee] = {
-					:overdue_hours => 0.0,
-					:overdue_number => 0,
-					:total => Hash::new,
-					:invisible => Hash::new
-				}
-					
-				timeSpan.each do |day|
-					result[assignee][:total][day] = {
-						:hours => 0.0,
-						:holiday => !workingDays.include?(day)
-					}
-				end
-			end
-			
-			hoursForIssue = getHoursForIssuesPerDay(issue, timeSpan, today)
+      result[assignee] = {
+          :overdue_hours => 0.0,
+          :overdue_number => 0,
+          :total => Hash::new,
+          :invisible => Hash::new
+        }
 
-			# Add the issue to the total workload, unless its overdue.
-			if issue.overdue? then
-				result[assignee][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
-				result[assignee][:overdue_number] += 1
-			else
-				result[assignee][:total] = addIssueInfoToSummary(result[assignee][:total], hoursForIssue, timeSpan)
-			end
-		
-			# If the issue is invisible, add it to the invisible issues summary.
-			# Otherwise, add it to the project (and its summary) to which it belongs
-			# to.
-			if !issue.visible? then
-				result[assignee][:invisible] = addIssueInfoToSummary(result[assignee][:invisible], hoursForIssue, timeSpan) unless issue.overdue?
-			else
-				project = issue.project
-				
-				if !result[assignee].has_key?(project) then
-					result[assignee][project] = {
-						:total => Hash::new,
-						:overdue_hours => 0.0,
-						:overdue_number => 0
-					}
-					
-					timeSpan.each do |day|
-						result[assignee][project][:total][day] = {
-							:hours => 0.0,
-							:holiday => !workingDays.include?(day)
-						}
-					end
-				end
+        timeSpan.each do |day|
+          result[assignee][:total][day] = {
+            :hours => 0.0,
+            :holiday => !workingDays.include?(day)
+          }
+        end
+      end
 
-				# Add the issue to the project workload summary, unless its overdue.
-				if issue.overdue? then
-					result[assignee][project][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
-					result[assignee][project][:overdue_number] += 1
-				else
-					result[assignee][project][:total] = addIssueInfoToSummary(result[assignee][project][:total], hoursForIssue, timeSpan)
-				end
+      hoursForIssue = getHoursForIssuesPerDay(issue, timeSpan, today)
 
-				# Add it to the issues for that project in any case.
-				result[assignee][project][issue] = hoursForIssue
-			end
+      # Add the issue to the total workload, unless its overdue.
+      if issue.overdue? then
+        result[assignee][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
+        result[assignee][:overdue_number] += 1
+      else
+        result[assignee][:total] = addIssueInfoToSummary(result[assignee][:total], hoursForIssue, timeSpan)
+      end
+
+      # If the issue is invisible, add it to the invisible issues summary.
+      # Otherwise, add it to the project (and its summary) to which it belongs
+      # to.
+      if !issue.visible? then
+        result[assignee][:invisible] = addIssueInfoToSummary(result[assignee][:invisible], hoursForIssue, timeSpan) unless issue.overdue?
+      else
+        project = issue.project
+
+        if !result[assignee].has_key?(project) then
+          result[assignee][project] = {
+            :total => Hash::new,
+            :overdue_hours => 0.0,
+            :overdue_number => 0
+          }
+
+          timeSpan.each do |day|
+            result[assignee][project][:total][day] = {
+              :hours => 0.0,
+              :holiday => !workingDays.include?(day)
+            }
+          end
+        end
+
+        # Add the issue to the project workload summary, unless its overdue.
+        if issue.overdue? then
+          result[assignee][project][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
+          result[assignee][project][:overdue_number] += 1
+        else
+          result[assignee][project][:total] = addIssueInfoToSummary(result[assignee][project][:total], hoursForIssue, timeSpan)
+        end
+
+        # Add it to the issues for that project in any case.
+        result[assignee][project][issue] = hoursForIssue
+      end
     end
 
     return result
@@ -319,29 +319,29 @@ class RedmineWorkload::ListUser
 
   def self.getUsersOfGroups(groups)
     result = [User.current]
-    
+
     groups.each do |grp|
       #result += grp.members.map(&:user) if grp.members.map(&:user).nil?
       result += grp.users(&:users)
     end
-    
-    
+
+
     return result.uniq
   end
 
   def self.addIssueInfoToSummary(summary, issueInfo, timeSpan)
     workingDays = RedmineWorkload::DateTools.getWorkingDaysInTimespan(timeSpan)
-		
-		summary = Hash::new if summary.nil?
-		
-		timeSpan.each do |day|
-			if !summary.has_key?(day) then
-				summary[day] = {:hours => 0.0, :holiday => !workingDays.include?(day)}
-			end
-			
-			summary[day][:hours] += issueInfo[day][:hours]
-		end
 
-		return summary
-	end
+    summary = Hash::new if summary.nil?
+
+    timeSpan.each do |day|
+      if !summary.has_key?(day) then
+        summary[day] = {:hours => 0.0, :holiday => !workingDays.include?(day)}
+      end
+
+      summary[day][:hours] += issueInfo[day][:hours]
+    end
+
+    return summary
+  end
 end

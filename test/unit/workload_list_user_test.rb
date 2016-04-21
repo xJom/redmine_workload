@@ -128,44 +128,44 @@ class WorkloadListUserTest < WorkloadTestCase
 
     with_wednesday_as_holiday do
 
-    issue = Issue.generate!(
-                             :start_date => Date::new(2013, 5, 31), # A Friday
-                             :due_date => Date::new(2013, 6, 2),    # A Sunday
-                             :estimated_hours => 10.0,
-                             :done_ratio => 0
-                           )
+      issue = Issue.generate!(
+                               :start_date => Date::new(2013, 5, 31), # A Friday
+                               :due_date => Date::new(2013, 6, 2),    # A Sunday
+                               :estimated_hours => 10.0,
+                               :done_ratio => 0
+                             )
 
-    firstDay = Date::new(2013, 5, 31) # A Friday
-    lastDay = Date::new(2013, 6, 3)   # A Monday
+      firstDay = Date::new(2013, 5, 31) # A Friday
+      lastDay = Date::new(2013, 6, 3)   # A Monday
 
-    expectedResult = {
-      Date::new(2013, 5, 31) => {
-        :hours => 10.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
-      },
-      Date::new(2013, 6, 1) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => true
-      },
-      Date::new(2013, 6, 2) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => true
-      },
-      Date::new(2013, 6, 3) => {
-        :hours => 0.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => false
+      expectedResult = {
+        Date::new(2013, 5, 31) => {
+          :hours => 10.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        },
+        Date::new(2013, 6, 1) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => true
+        },
+        Date::new(2013, 6, 2) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => true
+        },
+        Date::new(2013, 6, 3) => {
+          :hours => 0.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => false
+        }
       }
-    }
 
-    assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+      assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
 
     end
   end
@@ -174,49 +174,49 @@ class WorkloadListUserTest < WorkloadTestCase
 
     with_wednesday_as_holiday do
 
-    # 30 hours still need to be done, 3 working days until issue is finished.
-    issue = Issue.generate!(
-                             :start_date => Date::new(2013, 5, 28), # A Tuesday
-                             :due_date => Date::new(2013, 6, 1),    # A Saturday
-                             :estimated_hours => 40.0,
-                             :done_ratio => 25
-                           )
+      # 30 hours still need to be done, 3 working days until issue is finished.
+      issue = Issue.generate!(
+                               :start_date => Date::new(2013, 5, 28), # A Tuesday
+                               :due_date => Date::new(2013, 6, 1),    # A Saturday
+                               :estimated_hours => 40.0,
+                               :done_ratio => 25
+                             )
 
-    firstDay = Date::new(2013, 5, 27) # A Monday, before issue starts
-    lastDay = Date::new(2013, 5, 30)   # Thursday, before issue ends
+      firstDay = Date::new(2013, 5, 27) # A Monday, before issue starts
+      lastDay = Date::new(2013, 5, 30)   # Thursday, before issue ends
 
-    expectedResult = {
-      # Monday, no holiday, before issue starts.
-      Date::new(2013, 5, 27) => {
-        :hours => 0.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Tuesday, no holiday, issue starts here
-      Date::new(2013, 5, 28) => {
-        :hours => 10.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Wednesday, holiday
-      Date::new(2013, 5, 29) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => true
-      },
-      # Thursday, no holiday, last day of time span
-      Date::new(2013, 5, 30) => {
-        :hours => 10.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
+      expectedResult = {
+        # Monday, no holiday, before issue starts.
+        Date::new(2013, 5, 27) => {
+          :hours => 0.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Tuesday, no holiday, issue starts here
+        Date::new(2013, 5, 28) => {
+          :hours => 10.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Wednesday, holiday
+        Date::new(2013, 5, 29) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => true
+        },
+        # Thursday, no holiday, last day of time span
+        Date::new(2013, 5, 30) => {
+          :hours => 10.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        }
       }
-    }
 
-    assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+      assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
     end
   end
 
@@ -224,50 +224,50 @@ class WorkloadListUserTest < WorkloadTestCase
 
     with_wednesday_as_holiday do
 
-    # 36 hours still need to be done, 2 working days until issue is due.
-    # One day has already passed with 10% done.
-    issue = Issue.generate!(
-                             :start_date => Date::new(2013, 5, 28), # A Thursday
-                             :due_date => Date::new(2013, 6, 1),    # A Saturday
-                             :estimated_hours => 40.0,
-                             :done_ratio => 10
-                           )
+      # 36 hours still need to be done, 2 working days until issue is due.
+      # One day has already passed with 10% done.
+      issue = Issue.generate!(
+                               :start_date => Date::new(2013, 5, 28), # A Thursday
+                               :due_date => Date::new(2013, 6, 1),    # A Saturday
+                               :estimated_hours => 40.0,
+                               :done_ratio => 10
+                             )
 
-    firstDay = Date::new(2013, 5, 29) # A Wednesday, before issue starts
-    lastDay = Date::new(2013, 6, 1)   # Saturday, before issue ends
+      firstDay = Date::new(2013, 5, 29) # A Wednesday, before issue starts
+      lastDay = Date::new(2013, 6, 1)   # Saturday, before issue ends
 
-    expectedResult = {
-      # Wednesday, holiday, first day of time span.
-      Date::new(2013, 5, 29) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => true
-      },
-      # Thursday, no holiday
-      Date::new(2013, 5, 30) => {
-        :hours => 18.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Friday, no holiday
-      Date::new(2013, 5, 31) => {
-        :hours => 18.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Saturday, holiday, last day of time span
-      Date::new(2013, 6, 1) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => true
+      expectedResult = {
+        # Wednesday, holiday, first day of time span.
+        Date::new(2013, 5, 29) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => true
+        },
+        # Thursday, no holiday
+        Date::new(2013, 5, 30) => {
+          :hours => 18.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Friday, no holiday
+        Date::new(2013, 5, 31) => {
+          :hours => 18.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Saturday, holiday, last day of time span
+        Date::new(2013, 6, 1) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => true
+        }
       }
-    }
 
-    assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+      assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
     end
   end
 
@@ -275,43 +275,43 @@ class WorkloadListUserTest < WorkloadTestCase
 
     with_wednesday_as_holiday do
 
-    # 10 hours still need to be done, but issue is overdue. Remaining hours need
-    # to be put on first working day of time span.
-    issue = Issue.generate!(
-                             :start_date => nil,                 # No start date
-                             :due_date => Date::new(2013, 6, 1), # A Saturday
-                             :estimated_hours => 100.0,
-                             :done_ratio => 90
-                           )
+      # 10 hours still need to be done, but issue is overdue. Remaining hours need
+      # to be put on first working day of time span.
+      issue = Issue.generate!(
+                               :start_date => nil,                 # No start date
+                               :due_date => Date::new(2013, 6, 1), # A Saturday
+                               :estimated_hours => 100.0,
+                               :done_ratio => 90
+                             )
 
-    firstDay = Date::new(2013, 6, 2)  # Sunday, after issue due date
-    lastDay = Date::new(2013, 6, 4)   # Tuesday
+      firstDay = Date::new(2013, 6, 2)  # Sunday, after issue due date
+      lastDay = Date::new(2013, 6, 4)   # Tuesday
 
-    expectedResult = {
-      # Sunday, holiday.
-      Date::new(2013, 6, 2) => {
-        :hours => 0.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => true
-      },
-      # Monday, no holiday, first working day in time span.
-      Date::new(2013, 6, 3) => {
-        :hours => 10.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Tuesday, no holiday
-      Date::new(2013, 6, 4) => {
-        :hours => 0.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => false
+      expectedResult = {
+        # Sunday, holiday.
+        Date::new(2013, 6, 2) => {
+          :hours => 0.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => true
+        },
+        # Monday, no holiday, first working day in time span.
+        Date::new(2013, 6, 3) => {
+          :hours => 10.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Tuesday, no holiday
+        Date::new(2013, 6, 4) => {
+          :hours => 0.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => false
+        }
       }
-    }
 
-    assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+      assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
     end
   end
 
@@ -319,42 +319,42 @@ class WorkloadListUserTest < WorkloadTestCase
 
     with_wednesday_as_holiday do
 
-    # 10 hours still need to be done.
-    issue = Issue.generate!(
-                             :start_date => Date::new(2013, 6, 3), # A Tuesday
-                             :due_date => nil,
-                             :estimated_hours => 100.0,
-                             :done_ratio => 90
-                           )
+      # 10 hours still need to be done.
+      issue = Issue.generate!(
+                               :start_date => Date::new(2013, 6, 3), # A Tuesday
+                               :due_date => nil,
+                               :estimated_hours => 100.0,
+                               :done_ratio => 90
+                             )
 
-    firstDay = Date::new(2013, 6, 2)  # Sunday
-    lastDay = Date::new(2013, 6, 4)   # Tuesday
+      firstDay = Date::new(2013, 6, 2)  # Sunday
+      lastDay = Date::new(2013, 6, 4)   # Tuesday
 
-    expectedResult = {
-      # Sunday, holiday.
-      Date::new(2013, 6, 2) => {
-        :hours => 0.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => true
-      },
-      # Monday, no holiday, first working day in time span.
-      Date::new(2013, 6, 3) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => true,
-        :holiday => false
-      },
-      # Tuesday, no holiday
-      Date::new(2013, 6, 4) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => true,
-        :holiday => false
+      expectedResult = {
+        # Sunday, holiday.
+        Date::new(2013, 6, 2) => {
+          :hours => 0.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => true
+        },
+        # Monday, no holiday, first working day in time span.
+        Date::new(2013, 6, 3) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => true,
+          :holiday => false
+        },
+        # Tuesday, no holiday
+        Date::new(2013, 6, 4) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => true,
+          :holiday => false
+        }
       }
-    }
 
-    assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+      assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
     end
   end
 
@@ -362,42 +362,42 @@ class WorkloadListUserTest < WorkloadTestCase
 
     with_wednesday_as_holiday do
 
-    # 10 hours still need to be done.
-    issue = Issue.generate!(
-                             :start_date => nil,
-                             :due_date => Date::new(2013, 6, 3),
-                             :estimated_hours => 100.0,
-                             :done_ratio => 90
-                           )
+      # 10 hours still need to be done.
+      issue = Issue.generate!(
+                               :start_date => nil,
+                               :due_date => Date::new(2013, 6, 3),
+                               :estimated_hours => 100.0,
+                               :done_ratio => 90
+                             )
 
-    firstDay = Date::new(2013, 6, 2)  # Sunday
-    lastDay = Date::new(2013, 6, 4)   # Tuesday
+      firstDay = Date::new(2013, 6, 2)  # Sunday
+      lastDay = Date::new(2013, 6, 4)   # Tuesday
 
-    expectedResult = {
-      # Sunday, holiday.
-      Date::new(2013, 6, 2) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => true
-      },
-      # Monday, no holiday, first working day in time span.
-      Date::new(2013, 6, 3) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => true,
-        :holiday => false
-      },
-      # Tuesday, no holiday
-      Date::new(2013, 6, 4) => {
-        :hours => 0.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => false
+      expectedResult = {
+        # Sunday, holiday.
+        Date::new(2013, 6, 2) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => true
+        },
+        # Monday, no holiday, first working day in time span.
+        Date::new(2013, 6, 3) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => true,
+          :holiday => false
+        },
+        # Tuesday, no holiday
+        Date::new(2013, 6, 4) => {
+          :hours => 0.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => false
+        }
       }
-    }
 
-    assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
+      assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, firstDay)
     end
   end
 
@@ -405,65 +405,65 @@ class WorkloadListUserTest < WorkloadTestCase
 
     with_wednesday_as_holiday do
 
-    # 10 hours still need to be done, but issue is overdue. Remaining hours need
-    # to be put on first working day of time span.
-    issue = Issue.generate!(
-                             :start_date => nil,                 # No start date
-                             :due_date => Date::new(2013, 6, 1), # A Saturday
-                             :estimated_hours => 100.0,
-                             :done_ratio => 90
-                           )
+      # 10 hours still need to be done, but issue is overdue. Remaining hours need
+      # to be put on first working day of time span.
+      issue = Issue.generate!(
+                               :start_date => nil,                 # No start date
+                               :due_date => Date::new(2013, 6, 1), # A Saturday
+                               :estimated_hours => 100.0,
+                               :done_ratio => 90
+                             )
 
-    firstDay = Date::new(2013, 5, 30)  # Thursday
-    lastDay = Date::new(2013, 6, 4)    # Tuesday
-    today = Date::new(2013, 6, 2)      # After issue end
+      firstDay = Date::new(2013, 5, 30)  # Thursday
+      lastDay = Date::new(2013, 6, 4)    # Tuesday
+      today = Date::new(2013, 6, 2)      # After issue end
 
-    expectedResult = {
-      # Thursday, in the past.
-      Date::new(2013, 5, 30) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Friday, in the past.
-      Date::new(2013, 5, 31) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Saturday, holiday, in the past.
-      Date::new(2013, 6, 1) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => true
-      },
-      # Sunday, holiday.
-      Date::new(2013, 6, 2) => {
-        :hours => 0.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => true
-      },
-      # Monday, no holiday, first working day in time span.
-      Date::new(2013, 6, 3) => {
-        :hours => 10.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Tuesday, no holiday
-      Date::new(2013, 6, 4) => {
-        :hours => 0.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => false
+      expectedResult = {
+        # Thursday, in the past.
+        Date::new(2013, 5, 30) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Friday, in the past.
+        Date::new(2013, 5, 31) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Saturday, holiday, in the past.
+        Date::new(2013, 6, 1) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => true
+        },
+        # Sunday, holiday.
+        Date::new(2013, 6, 2) => {
+          :hours => 0.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => true
+        },
+        # Monday, no holiday, first working day in time span.
+        Date::new(2013, 6, 3) => {
+          :hours => 10.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Tuesday, no holiday
+        Date::new(2013, 6, 4) => {
+          :hours => 0.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => false
+        }
       }
-    }
 
-    assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, today)
+      assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, today)
     end
   end
 
@@ -471,63 +471,63 @@ class WorkloadListUserTest < WorkloadTestCase
 
     with_wednesday_as_holiday do
 
-    issue = Issue.generate!(
-                             :start_date => Date::new(2013, 5, 31), # A Friday
-                             :due_date => Date::new(2013, 6, 4),    # A Tuesday
-                             :estimated_hours => 10.0,
-                             :done_ratio => 0
-                           )
+      issue = Issue.generate!(
+                               :start_date => Date::new(2013, 5, 31), # A Friday
+                               :due_date => Date::new(2013, 6, 4),    # A Tuesday
+                               :estimated_hours => 10.0,
+                               :done_ratio => 0
+                             )
 
-    firstDay = Date::new(2013, 5, 31) # A Friday
-    lastDay = Date::new(2013, 6, 5)   # A Wednesday
-    today = Date::new(2013, 6, 2)     # A Sunday
+      firstDay = Date::new(2013, 5, 31) # A Friday
+      lastDay = Date::new(2013, 6, 5)   # A Wednesday
+      today = Date::new(2013, 6, 2)     # A Sunday
 
-    expectedResult = {
-      # Friday
-      Date::new(2013, 5, 31) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Saturday
-      Date::new(2013, 6, 1) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => true
-      },
-      # Sunday
-      Date::new(2013, 6, 2) => {
-        :hours => 0.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => true
-      },
-      # Monday
-      Date::new(2013, 6, 3) => {
-        :hours => 5.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Tuesday
-      Date::new(2013, 6, 4) => {
-        :hours => 5.0,
-        :active => true,
-        :noEstimate => false,
-        :holiday => false
-      },
-      # Wednesday
-      Date::new(2013, 6, 5) => {
-        :hours => 0.0,
-        :active => false,
-        :noEstimate => false,
-        :holiday => true
+      expectedResult = {
+        # Friday
+        Date::new(2013, 5, 31) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Saturday
+        Date::new(2013, 6, 1) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => true
+        },
+        # Sunday
+        Date::new(2013, 6, 2) => {
+          :hours => 0.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => true
+        },
+        # Monday
+        Date::new(2013, 6, 3) => {
+          :hours => 5.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Tuesday
+        Date::new(2013, 6, 4) => {
+          :hours => 5.0,
+          :active => true,
+          :noEstimate => false,
+          :holiday => false
+        },
+        # Wednesday
+        Date::new(2013, 6, 5) => {
+          :hours => 0.0,
+          :active => false,
+          :noEstimate => false,
+          :holiday => true
+        }
       }
-    }
 
-    assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, today)
+      assertIssueTimesHashEquals expectedResult, RedmineWorkload::ListUser.getHoursForIssuesPerDay(issue, firstDay..lastDay, today)
     end
   end
 

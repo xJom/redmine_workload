@@ -14,8 +14,8 @@ class WorkloadDateToolsTest < WorkloadTestCase
     # Set friday to be a holiday.
     with_plugin_settings 'general_workday_friday' => '' do
 
-    date = Date.new(2005, 12, 30);      # A friday
-    assert_equal Set::new, RedmineWorkload::DateTools.getWorkingDaysInTimespan(date..date, true);
+      date = Date.new(2005, 12, 30);      # A friday
+      assert_equal Set::new, RedmineWorkload::DateTools.getWorkingDaysInTimespan(date..date, true);
     end
   end
 
@@ -32,9 +32,9 @@ class WorkloadDateToolsTest < WorkloadTestCase
     with_plugin_settings 'general_workday_wednesday' => '',
                          'general_workday_thursday' => '' do
 
-    startDate = Date.new(2005, 12, 28); # A wednesday
-    endDate = Date.new(2005, 12, 29);     # A thursday
-    assert_equal Set::new, RedmineWorkload::DateTools.getWorkingDaysInTimespan(startDate..endDate, true);
+      startDate = Date.new(2005, 12, 28); # A wednesday
+      endDate = Date.new(2005, 12, 29);     # A thursday
+      assert_equal Set::new, RedmineWorkload::DateTools.getWorkingDaysInTimespan(startDate..endDate, true);
     end
   end
 
@@ -42,16 +42,16 @@ class WorkloadDateToolsTest < WorkloadTestCase
 
     with_plugin_settings 'general_workday_monday' => '' do
 
-    startDate = Date.new(2005, 12, 29); # A thursday
-    endDate = Date.new(2006, 1, 3);     # A tuesday
+      startDate = Date.new(2005, 12, 29); # A thursday
+      endDate = Date.new(2006, 1, 3);     # A tuesday
 
-    expectedResult = [
-      startDate,
-      Date::new(2005, 12, 30),
-      endDate
-    ]
+      expectedResult = [
+        startDate,
+        Date::new(2005, 12, 30),
+        endDate
+      ]
 
-    assert_equal Set::new(expectedResult), RedmineWorkload::DateTools.getWorkingDaysInTimespan(startDate..endDate, true);
+      assert_equal Set::new(expectedResult), RedmineWorkload::DateTools.getWorkingDaysInTimespan(startDate..endDate, true);
     end
   end
 
