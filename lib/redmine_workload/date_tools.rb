@@ -1,20 +1,18 @@
 # -*- encoding : utf-8 -*-
 class RedmineWorkload::DateTools
 
-  # Returns a list of all regular working weekdays.
+  WEEK = (1..7).to_a
+
+  # array of all non working weekdays as day numbers. retrieved from global
+  # config (Administration / Issues / Non-working days)
+  def self.non_working_week_days
+    Setting.non_working_week_days.map(&:to_i)
+  end
+
+  # Returns a Set of all regular working weekdays.
   # 1 is monday, 7 is sunday (same as in Date::cwday)
   def self.getWorkingDays()
-    result = Set::new
-
-    result.add(1) if Setting['plugin_redmine_workload']['general_workday_monday'] != ''
-    result.add(2) if Setting['plugin_redmine_workload']['general_workday_tuesday'] != ''
-    result.add(3) if Setting['plugin_redmine_workload']['general_workday_wednesday'] != ''
-    result.add(4) if Setting['plugin_redmine_workload']['general_workday_thursday'] != ''
-    result.add(5) if Setting['plugin_redmine_workload']['general_workday_friday'] != ''
-    result.add(6) if Setting['plugin_redmine_workload']['general_workday_saturday'] != ''
-    result.add(7) if Setting['plugin_redmine_workload']['general_workday_sunday'] != ''
-
-    return result
+    (WEEK - non_working_week_days).to_set
   end
 
   @@getWorkingDaysInTimespanCache = Hash::new

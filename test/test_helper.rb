@@ -8,13 +8,6 @@ class WorkloadTestCase < ActiveSupport::TestCase
     with_settings(
       {
         'plugin_redmine_workload' => {
-          'general_workday_monday' => 'checked',
-          'general_workday_tuesday' => 'checked',
-          'general_workday_wednesday' => 'checked',
-          'general_workday_thursday' => 'checked',
-          'general_workday_friday' => 'checked',
-          'general_workday_saturday' => '',
-          'general_workday_sunday' => '',
           'threshold_lowload_min' => 0.1,
           'threshold_normalload_min' => 7.0,
           'threshold_highload_min' => 8.5,

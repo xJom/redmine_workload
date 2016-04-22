@@ -685,11 +685,7 @@ class WorkloadListUserTest < WorkloadTestCase
   # Set Saturday, Sunday and Wednesday to be a holiday, all others to be a
   # working day.
   def with_wednesday_as_holiday(&block)
-    with_plugin_settings(
-      {
-        'general_workday_wednesday' => '',
-      }, &block
-    )
+    with_settings('non_working_week_days' => ['3', '6', '7'], &block)
   end
 
 end
