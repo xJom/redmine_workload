@@ -11,37 +11,9 @@ module RedmineWorkload
     end
 
     # Returns a Set of all regular working weekdays.
-    # 1 is monday, 7 is sunday (same as in Date::cwday)
-    def self.getWorkingDays()
+    # 1 is monday, 7 is sunday (same as in Date#cwday)
+    def self.working_days
       (WEEK - non_working_week_days).to_set
-    end
-
-    @@getWorkingDaysInTimespanCache = Hash::new
-
-    def self.getWorkingDaysInTimespan(timeSpan, noCache = false)
-      raise ArgumentError unless timeSpan.kind_of?(Range)
-
-      return @@getWorkingDaysInTimespanCache[timeSpan] unless @@getWorkingDaysInTimespanCache[timeSpan].nil? || noCache
-
-      workingDays = self::getWorkingDays()
-
-      result = Set::new
-
-      timeSpan.each do |day|
-        if workingDays.include?(day.cwday) then
-          result.add(day)
-        end
-      end
-
-      @@getWorkingDaysInTimespanCache[timeSpan] = result
-
-      return result
-    end
-
-    def self.getRealDistanceInDays(timeSpan)
-      raise ArgumentError unless timeSpan.kind_of?(Range)
-
-      return self::getWorkingDaysInTimespan(timeSpan).size
     end
 
   end

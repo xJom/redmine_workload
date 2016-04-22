@@ -53,23 +53,19 @@ module RedmineWorkload
     #   * :holiday - true if this is a holiday, false otherwise.
     #
     # If the given time span is empty, an empty hash is returned.
-    def self.getHoursForIssuesPerDay(issue, timeSpan, today)
-
-      raise ArgumentError unless issue.kind_of?(Issue)
-      raise ArgumentError unless timeSpan.kind_of?(Range)
-      raise ArgumentError unless today.kind_of?(Date)
+    def self.getHoursForIssuesPerDay(issue, timespan, today)
+      timespan = Timespan.new(timespan) if Range === timespan
 
       hoursRemaining = getEstimatedTimeForIssue(issue)
-      workingDays = RedmineWorkload::DateTools.getWorkingDaysInTimespan(timeSpan)
 
-      result = Hash::new
+      result = {}
 
       # If issue is overdue and the remaining time may be estimated, all
       # remaining hours are put on first working day.
-      if !issue.due_date.nil? && (issue.due_date < today) then
+      if !issue.due_date.nil? && (issue.due_date < today)
 
         # Initialize all days to inactive
-        timeSpan.each do |day|
+        timespan.each do |day|
 
           # A day is active if it is after the issue start and before the issue due date
           isActive = (day <= issue.due_date && (issue.start_date.nil? || issue.start_date >= day))
@@ -78,26 +74,26 @@ module RedmineWorkload
             :hours => 0.0,
             :active => isActive,
             :noEstimate => false,
-            :holiday => !workingDays.include?(day)
+            :holiday => timespan.holiday?(day)
           }
         end
 
-        firstWorkingDayAfterToday = RedmineWorkload::DateTools.getWorkingDaysInTimespan(today..timeSpan.end).min
-        result[firstWorkingDayAfterToday] = Hash::new if result[firstWorkingDayAfterToday].nil?
+        firstWorkingDayAfterToday = timespan.first_work_day_from(today) || today
+        result[firstWorkingDayAfterToday] ||= {}
         result[firstWorkingDayAfterToday][:hours] = hoursRemaining
 
       # If the hours needed for an issue can not be estimated, set all days
       # outside the issues time to inactive, and all days within the issues time
       # to active but not estimated.
-      elsif issue.due_date.nil? || issue.start_date.nil? then
-        timeSpan.each do |day|
+      elsif issue.due_date.nil? || issue.start_date.nil?
+        timespan.each do |day|
 
-          isHoliday = !workingDays.include?(day)
+          isHoliday = timespan.holiday? day
 
           # Check: Is the issue is active on day?
           if ( (!issue.due_date.nil?)   && (day <= issue.due_date)  ) ||
              ( (!issue.start_date.nil?) && (day >= issue.start_date)) ||
-             (   issue.start_date.nil?  &&  issue.due_date.nil?     ) then
+             (   issue.start_date.nil?  &&  issue.due_date.nil?     )
 
             result[day] = {
               :hours => 0.0,                     # No estimate possible, use zero
@@ -122,16 +118,16 @@ module RedmineWorkload
       # The issue has start and end date
       else
         # Number of remaining working days for the issue:
-        numberOfWorkdaysForIssue = RedmineWorkload::DateTools.getRealDistanceInDays([today, issue.start_date].max..issue.due_date)
+        numberOfWorkdaysForIssue = Timespan.new([today, issue.start_date].max..issue.due_date).real_distance_in_days
         hoursPerWorkday = hoursRemaining/numberOfWorkdaysForIssue.to_f
 
-        timeSpan.each do |day|
+        timespan.each do |day|
 
-          isHoliday = !workingDays.include?(day)
+          isHoliday = timespan.holiday? day
 
-          if (day >= issue.start_date) && (day <= issue.due_date) then
+          if (day >= issue.start_date) && (day <= issue.due_date)
 
-            if (day >= today) then
+            if (day >= today)
               result[day] = {
                 :hours => isHoliday ? 0.0 : hoursPerWorkday,
                 :active => true,
@@ -175,14 +171,10 @@ module RedmineWorkload
     # * :overdue_hours
     # * :overdue_number
     #
-    def self.getHoursPerUserIssueAndDay(issues, timeSpan, today)
-      raise ArgumentError unless issues.kind_of?(Array)
-      raise ArgumentError unless timeSpan.kind_of?(Range)
-      raise ArgumentError unless today.kind_of?(Date)
+    def self.getHoursPerUserIssueAndDay(issues, timespan, today)
+      timespan = Timespan.new(timespan) if Range === timespan
 
-      workingDays = RedmineWorkload::DateTools.getWorkingDaysInTimespan(timeSpan)
-
-      firstWorkingDayFromTodayOn = workingDays.select {|x| x >= today}.min || today
+      firstWorkingDayFromTodayOn = timespan.first_work_day_from(today) || today
 
       result = {}
 
@@ -190,93 +182,66 @@ module RedmineWorkload
 
         assignee = issue.assigned_to
 
-        if !result.has_key?(issue.assigned_to) then
+        if !result.has_key?(issue.assigned_to)
         result[assignee] = {
             :overdue_hours => 0.0,
             :overdue_number => 0,
-            :total => Hash::new,
-            :invisible => Hash::new
+            :total => {},
+            :invisible => {}
           }
 
-          timeSpan.each do |day|
+          timespan.each do |day|
             result[assignee][:total][day] = {
               :hours => 0.0,
-              :holiday => !workingDays.include?(day)
+              :holiday => timespan.holiday?(day)
             }
           end
         end
 
-        hoursForIssue = getHoursForIssuesPerDay(issue, timeSpan, today)
+        hoursForIssue = getHoursForIssuesPerDay(issue, timespan, today)
 
         # Add the issue to the total workload, unless its overdue.
-        if issue.overdue? then
-          result[assignee][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
+        if issue.overdue?
+          result[assignee][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours]
           result[assignee][:overdue_number] += 1
         else
-          result[assignee][:total] = addIssueInfoToSummary(result[assignee][:total], hoursForIssue, timeSpan)
+          result[assignee][:total] = addIssueInfoToSummary(result[assignee][:total], hoursForIssue, timespan)
         end
 
         # If the issue is invisible, add it to the invisible issues summary.
         # Otherwise, add it to the project (and its summary) to which it belongs
         # to.
-        if !issue.visible? then
-          result[assignee][:invisible] = addIssueInfoToSummary(result[assignee][:invisible], hoursForIssue, timeSpan) unless issue.overdue?
+        if !issue.visible?
+          result[assignee][:invisible] = addIssueInfoToSummary(result[assignee][:invisible], hoursForIssue, timespan) unless issue.overdue?
         else
           project = issue.project
 
-          if !result[assignee].has_key?(project) then
+          if !result[assignee].has_key?(project)
             result[assignee][project] = {
-              :total => Hash::new,
+              :total => {},
               :overdue_hours => 0.0,
               :overdue_number => 0
             }
 
-            timeSpan.each do |day|
+            timespan.each do |day|
               result[assignee][project][:total][day] = {
                 :hours => 0.0,
-                :holiday => !workingDays.include?(day)
+                :holiday => timespan.holiday?(day)
               }
             end
           end
 
           # Add the issue to the project workload summary, unless its overdue.
-          if issue.overdue? then
+          if issue.overdue?
             result[assignee][project][:overdue_hours]  += hoursForIssue[firstWorkingDayFromTodayOn][:hours];
             result[assignee][project][:overdue_number] += 1
           else
-            result[assignee][project][:total] = addIssueInfoToSummary(result[assignee][project][:total], hoursForIssue, timeSpan)
+            result[assignee][project][:total] = addIssueInfoToSummary(result[assignee][project][:total], hoursForIssue, timespan)
           end
 
           # Add it to the issues for that project in any case.
           result[assignee][project][issue] = hoursForIssue
         end
-      end
-
-      return result
-    end
-
-    # Returns an array with one entry for each month in the given time span.
-    # Each entry is a hash with two keys: :first_day and :last_day, having the
-    # first resp. last day of that month from the time span as value.
-    def self.getMonthsInTimespan(timeSpan)
-
-      raise ArgumentError unless timeSpan.kind_of?(Range)
-
-      # Abort if the given time span is empty.
-      return [] unless timeSpan.any?
-
-      firstOfCurrentMonth = timeSpan.first
-      lastOfCurrentMonth  = [firstOfCurrentMonth.end_of_month, timeSpan.last].min
-
-      result = []
-      while firstOfCurrentMonth <= timeSpan.last do
-        result.push({
-            :first_day => firstOfCurrentMonth,
-            :last_day  => lastOfCurrentMonth
-        })
-
-        firstOfCurrentMonth = firstOfCurrentMonth.beginning_of_month.next_month
-        lastOfCurrentMonth  = [firstOfCurrentMonth.end_of_month, timeSpan.last].min
       end
 
       return result
@@ -288,11 +253,11 @@ module RedmineWorkload
       raise ArgumentError unless hours.respond_to?(:to_f)
       hours = hours.to_f
 
-      if hours < Setting['plugin_redmine_workload']['threshold_lowload_min'].to_f then
+      if hours < Setting['plugin_redmine_workload']['threshold_lowload_min'].to_f
         return "none"
-      elsif hours < Setting['plugin_redmine_workload']['threshold_normalload_min'].to_f then
+      elsif hours < Setting['plugin_redmine_workload']['threshold_normalload_min'].to_f
         return "low"
-      elsif hours < Setting['plugin_redmine_workload']['threshold_highload_min'].to_f then
+      elsif hours < Setting['plugin_redmine_workload']['threshold_highload_min'].to_f
         return "normal"
       else
         return "high"
@@ -330,20 +295,17 @@ module RedmineWorkload
       return result.uniq
     end
 
-    def self.addIssueInfoToSummary(summary, issueInfo, timeSpan)
-      workingDays = RedmineWorkload::DateTools.getWorkingDaysInTimespan(timeSpan)
-
-      summary = Hash::new if summary.nil?
-
-      timeSpan.each do |day|
-        if !summary.has_key?(day) then
-          summary[day] = {:hours => 0.0, :holiday => !workingDays.include?(day)}
+    def self.addIssueInfoToSummary(summary, issue_info, timespan)
+      (summary || {}).tap do |sum|
+        timespan.each do |day|
+          sum[day] ||= {
+            hours: 0.0,
+            holiday: timespan.holiday?(day)
+          }
+          sum[day][:hours] += issue_info[day][:hours]
         end
-
-        summary[day][:hours] += issueInfo[day][:hours]
       end
-
-      return summary
     end
+
   end
 end

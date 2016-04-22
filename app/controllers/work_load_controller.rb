@@ -25,12 +25,12 @@ class WorkLoadController < ApplicationController
     # long running times
     @last_day = [(@first_day >> 12) - 1, @last_day].min
     @timeSpanToDisplay = @first_day..@last_day
+    @timespan = RedmineWorkload::Timespan.new @timeSpanToDisplay
 
     initalizeUsers(workloadParameters)       
 
     @issuesForWorkload = RedmineWorkload::ListUser.getOpenIssuesForUsers(@usersToDisplay)
-    @monthsToRender = RedmineWorkload::ListUser.getMonthsInTimespan(@timeSpanToDisplay)
-    @workloadData   = RedmineWorkload::ListUser.getHoursPerUserIssueAndDay(@issuesForWorkload, @timeSpanToDisplay, @today)
+    @workloadData   = RedmineWorkload::ListUser.getHoursPerUserIssueAndDay(@issuesForWorkload, @timespan, @today)
   end
 
 
