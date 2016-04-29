@@ -62,7 +62,6 @@ module RedmineWorkload
       grp.users(&:users)
     end.tap do |result|
       result.flatten!
-      result << User.current
       result.uniq!
     end
   end

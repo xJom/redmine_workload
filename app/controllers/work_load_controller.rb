@@ -19,8 +19,8 @@ class WorkLoadController < ApplicationController
     @today     = sanitizeDateParameter(workloadParameters[:start_date],
                                        User.current.today)
 
-	  # if @today ("select as today") is before @first_day take @today as @first_day
-	  @first_day = [@today, @first_day].min
+    # if @today ("select as today") is before @first_day take @today as @first_day
+    @first_day = [@today, @first_day].min
 
     # Make sure that last_day is at most 12 months after first_day to prevent
     # long running times
