@@ -5,6 +5,6 @@
 
 <%= labelled_fields_for :pref, @user.pref do |pref| %>
   <% RedmineWorkload.working_days.each do |d| %>
-    <p><%= pref.text_field :"workload_hours_#{d}", required: true, label: day_name(d), size: 3 %></p>
+    <p><%= pref.text_field :"workload_hours_#{d}", required: true, label: day_name(d), size: 3 %> <%= l :field_hours %></p>
   <% end %>
 <% end %>
