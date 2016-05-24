@@ -260,21 +260,21 @@ legend {
     background: transparent;
 }
 
-.controller-work_load .data .active span {
+.controller-work_load .data .issue-workload .active span {
     background-color: rgba(200, 200, 200, 0.5);
 }
 
 .controller-work_load .data .low span {
-    background: green;
+    background: green !important;
 }
 
 .controller-work_load .data .normal span {
-    background: yellow;
+    background: yellow !important;
     color: black;
 }
 
 .controller-work_load .data .high span {
-    background: red;
+    background: red !important;
 }
 
 .controller-work_load .data .holiday {

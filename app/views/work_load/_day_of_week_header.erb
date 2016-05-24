@@ -3,7 +3,7 @@
 #  dayOfMonth: Any day of the month to render the header for.
 %>
 
-<% @timeSpanToDisplay.each do |currentDay|%>
+<% @timespan.each do |currentDay|%>
   <%
     if (currentDay.cwday == 1) then
       klass = ' firstDayOfWeek'

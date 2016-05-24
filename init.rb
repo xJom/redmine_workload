@@ -1,7 +1,15 @@
 # -*- encoding : utf-8 -*-
 require 'redmine'
-require_dependency 'dateTools'
-require_dependency 'list_user'
+
+require_dependency 'redmine_workload'
+
+require_dependency 'redmine_workload'
+
+Rails.configuration.to_prepare do
+  RedmineWorkload::IssuePatch.apply
+  RedmineWorkload::UserPatch.apply
+  RedmineWorkload::UserPreferencePatch.apply
+end
 
 Redmine::Plugin.register :redmine_workload do
   name 'Redmine workload plugin'
@@ -18,16 +26,9 @@ Redmine::Plugin.register :redmine_workload do
 
   settings :partial => 'settings/workload_settings',
            :default => {
-              "general_workday_monday"    => 'checked',
-              "general_workday_tuesday"   => 'checked',
-              'general_workday_wednesday' => 'checked',
-              'general_workday_thursday'  => 'checked',
-              'general_workday_friday'    => 'checked',
-              'general_workday_saturday'  => '',
-              'general_workday_sunday'    => '',
-              'threshold_lowload_min'     => 0.1,
-              'threshold_normalload_min'  => 7,
-              'threshold_highload_min'    => 8.5
+              'threshold_lowload_min'     => 1,
+              'threshold_normalload_min'  => 80,
+              'threshold_highload_min'    => 101
            }
 
   permission :view_project_workload, :work_load => :show

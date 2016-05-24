@@ -2,6 +2,8 @@
 de:
   permission_view_project_workload: "Workload der Mitglieder in eigenen Projekten anzeigen"
 
+  label_worktimes: Arbeitszeiten
+
   workload_title: "Workload"
   workload_site_title: "Workload"
   workload_show_label: "Workload"
@@ -52,7 +54,7 @@ de:
   workload_settings_general_workdays_sunday:    "Sonntag"
 
   workload_settings_hours:                      "Belastungsgrenzen"
-  workload_settings_leastdailyworkload:         "Kleinste Arbeitsbelastung pro Tag, deren Last als ..."
+  workload_settings_leastdailyworkload:         "Kleinste Arbeitsbelastung (in %), deren Last als ..."
   workload_settings_hours_low_min:              "... niedrig angesehen wird:"
   workload_settings_hours_normal_min:           "... normal angesehen wird:"
   workload_settings_hours_high_min:             "... überlastet angesehen wird:"

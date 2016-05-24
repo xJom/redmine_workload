@@ -18,13 +18,8 @@
         <%= render :partial => 'day_of_week_header' %>
       </tr>
     </thead>
-    <% # Iterate over all users:
-       @workloadData.keys.each do |user| %>
-       <%= render :partial => 'workload_for_user',
-                  :locals => { :user => user,
-                               :data => @workloadData[user]
-                             }
-       %>
+    <% @workloads_by_user.values.each do |uwl| %>
+       <%= render partial: 'workload_for_user', locals: { workload: uwl } %>
     <% end %>
   </table>
 </div>

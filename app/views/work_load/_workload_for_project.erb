@@ -3,32 +3,36 @@
 # Parameters:
 #  * user: The user to render the data for.
 #  * project: The project to render
-#  * data: The data to render. A hash with issues as keys.
+#  * data: The data to render. A hash with issues as keys, and one :summary
+#    key. Values are Workload instances.
+#  * overdue: nil or a two-element hash holding number and hours of overdue
+#    issues
 %>
 
 <tbody class="project-total-workload user-<%= user.id %>-open user-<%= user.id %>-close">
   <tr>
-	<th class="project-description" scope="row" title="<%= l(:workload_trigger_tooltip) %>">
-	  <%= render :partial => 'trigger', :locals => {:trigger_for => "project-#{user.id}-#{project.identifier}"} %>
-	  <%= project.to_s %>
-	  <% if data[:overdue_number] > 0 %>
-		<dl class="additional-project-info user-<%= user.id %>-close project-<%= user.id %>-<%= project.identifier %>-open project-<%= user.id %>-<%= project.identifier %>-close">
-		  <dt><%= l(:workload_overdue_issues_num) %></dt>
-		  <dd><%= data[:overdue_number] %></dd>
-		  <dt><%= l(:workload_overdue_issues_hours) %></dt>
-		  <dd><%= "%0.2f" % data[:overdue_hours] %></dd>
-		</dl>
-	  <% end %>
-	</th>
-	<% # Print the total workload for this project for each day %>
-	<%= render :partial => 'total_workload', :locals => {:totalWorkload => data[:total]} %>
+  <th class="project-description" scope="row" title="<%= l(:workload_trigger_tooltip) %>">
+    <%= render :partial => 'trigger', :locals => {:trigger_for => "project-#{user.id}-#{project.identifier}"} %>
+    <%= project.to_s %>
+    <% if overdue and overdue[:overdue_number] > 0 %>
+      <dl class="additional-project-info user-<%= user.id %>-close project-<%= user.id %>-<%= project.identifier %>-open project-<%= user.id %>-<%= project.identifier %>-close">
+        <dt><%= l(:workload_overdue_issues_num) %></dt>
+        <dd><%= overdue[:overdue_number] %></dd>
+        <dt><%= l(:workload_overdue_issues_hours) %></dt>
+        <dd><%= "%0.2f" % overdue[:overdue_hours] %></dd>
+      </dl>
+    <% end %>
+  </th>
+  <% # Print the total workload for this project for each day %>
+  <%= render partial: 'total_workload',
+             locals: { user: user, workload: data[:summary] } %>
   </tr>
 </tbody>
 <tbody class="issue-workloads user-<%= user.id %>-close project-<%= user.id %>-<%= project.identifier %>-open project-<%= user.id %>-<%= project.identifier %>-close">
   <% # Iterate over all issues for the project %>
-  <% issuesForUser = data.keys.select{|x| x.kind_of?(Issue)} %>
-     <% issuesForUser.each_with_index do |issue, index| %>
-
-     <%= render :partial => 'workload_for_issue', :locals => {:user => user, :issue => issue, :data => data[issue], :index => index} %>
+  <% data.keys.select{|x| Issue === x}.each_with_index do |issue, index| %>
+    <%= render partial: 'workload_for_issue',
+               locals: {user: user, issue: issue,
+                        workload: data[issue], index: index} %>
   <% end %>
 </tbody>
