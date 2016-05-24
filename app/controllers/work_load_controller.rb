@@ -56,7 +56,7 @@ class WorkLoadController < ApplicationController
 
     # Get list of users that are allowed to be displayed by this user
     @usersAllowedToDisplay = RedmineWorkload.users_allowed_to_display
-    @usersAllowedToDisplay.sort_by!(&:name)
+    @usersAllowedToDisplay.sort_by(&:name)
     user_ids &= @usersAllowedToDisplay.map(&:id)
 
     # Get list of users that should be displayed.
