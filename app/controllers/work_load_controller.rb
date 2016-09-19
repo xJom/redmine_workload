@@ -5,7 +5,6 @@ class WorkLoadController < ApplicationController
   helper :issues
   helper :projects
   helper :queries
-  helper :workload_filters
   helper :workload
 
   include QueriesHelper
@@ -38,7 +37,6 @@ class WorkLoadController < ApplicationController
   end
 
 
-
   private
 
   def initalizeUsers(workloadParameters)
@@ -56,15 +54,14 @@ class WorkLoadController < ApplicationController
     user_ids = workloadParameters[:users].kind_of?(Array) ? workloadParameters[:users] : []
     user_ids.map!(&:to_i)
 
+    # Get list of users that are allowed to be displayed by this user
+    @usersAllowedToDisplay = RedmineWorkload.users_allowed_to_display
+    @usersAllowedToDisplay.sort_by!(&:name)
+    user_ids &= @usersAllowedToDisplay.map(&:id)
+
     # Get list of users that should be displayed.
     @usersToDisplay += User.where(id: user_ids)
 
-    # Get list of users that are allowed to be displayed by this user sort by
-    # lastname
-    @usersAllowedToDisplay = RedmineWorkload.users_allowed_to_display
-
-    # Intersect the list with the list of users that are allowed to be displayed.
-    @usersToDisplay &= @usersAllowedToDisplay
     @usersToDisplay.sort_by!(&:name)
   end
 
