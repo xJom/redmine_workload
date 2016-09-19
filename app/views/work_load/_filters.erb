@@ -10,17 +10,17 @@
 			      <%= label_tag :workload_first_day, l(:workload_show_rangefrom) %>	     	  	
 	     	  </td>
 	     	  <td>
-	     	  	  <%= text_field_tag :workload_first_day, @first_day, :name => 'workload[first_day]', :size => 10 %>
+	     	  	  <%= date_field_tag :workload_first_day, @first_day, :name => 'workload[first_day]', :size => 10 %>
 			      <%= calendar_for('workload_first_day') %>
 	     	  </td>
 	       </tr>
 	      	<tr>
 	      		<td><%= label_tag :workload_last_day, l(:workload_show_rangeto) %></td>
-	      		<td><%= text_field_tag :workload_last_day, @last_day, :name => 'workload[last_day]', :size => 10 %><%= calendar_for('workload_last_day') %></td>
+	      		<td><%= date_field_tag :workload_last_day, @last_day, :name => 'workload[last_day]', :size => 10 %><%= calendar_for('workload_last_day') %></td>
 	      	</tr>
 	      	<tr>
 	      		<td><%= label_tag :workload_start_date, l(:workload_show_today) %></td>
-	      		<td><%= text_field_tag :workload_start_date, @today, :name => 'workload[start_date]', :size => 10 %><%= calendar_for('workload_start_date') %></td>
+	      		<td><%= date_field_tag :workload_start_date, @today, :name => 'workload[start_date]', :size => 10 %><%= calendar_for('workload_start_date') %></td>
 	      	</tr>
 	      </table>
 	      
