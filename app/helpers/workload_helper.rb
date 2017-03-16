@@ -44,7 +44,7 @@ module WorkloadHelper
     usersToShow.each do |user|
       selected = selectedUsers.include?(user) ? 'selected="selected"' : ''
 
-      result += "<option value=\"#{h(user.id)}\" #{selected}>#{h user.name}</option>"
+      result += "<option value=\"#{h(user.id)}\" #{selected}>#{h(user.name)}</option>"
     end
 
     return result.html_safe
